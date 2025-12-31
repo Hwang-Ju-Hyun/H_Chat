@@ -11,6 +11,8 @@ using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ChatHandler;
+
 
 namespace H_Chat_Client
 {    
@@ -18,7 +20,14 @@ namespace H_Chat_Client
     {
         TcpClient client;
         IPEndPoint ip;
-        NetworkStream stream;        
+        NetworkStream stream;
+        string server_addr;
+        int server_port=5000;
+        ChatHandler.Common.ChatHandler ch;
+        public string Input_MSG
+        {
+            get; set;
+        }
         public Form1()
         {
             InitializeComponent();            
@@ -35,22 +44,38 @@ namespace H_Chat_Client
         }
         private void BTN_Send_Click(object sender, EventArgs e)
         {
-            ch.Send();
-            this.Invoke(new MethodInvoker(delegate { richTextBox1.AppendText(addr + ":" + port + " : " + Input_MSG); }));
+            ch.Send(Input_MSG);
+            this.Invoke(new MethodInvoker(delegate { richTextBox1.AppendText(ip.Address.ToString() + " : " + ip.Port.ToString() + " : " + Input_MSG); richTextBox1.AppendText("\n"); }));
         }
         private void BTN_ConnectServer_Click(object sender, EventArgs e)
         {            
             client = new TcpClient(textBox1.Text, 5000);
-            stream = client.GetStream();
             ip = (IPEndPoint)client.Client.LocalEndPoint;
+            server_addr = ip.Address.ToString();
+
+            stream = client.GetStream();
             textBox2.Text = ip.Address.ToString() + ":" + ip.Port.ToString();
+            
+            
 
             if (client == null)
                 return;
             if (client.Connected)
             {
+                ch = new ChatHandler.Common.ChatHandler(client);
                 stream = client.GetStream();
                 MessageBox.Show("서버 연동 완료");
+
+                ch.OnMessageReceived += (msg) =>
+                {
+                    Invoke(new Action(() =>
+                    {
+                        richTextBox1.AppendText(server_addr + " : " + server_port + " : " + msg);
+                        richTextBox1.AppendText("\n");
+                    }));
+                };
+
+                ch.Receive();
             }
             else
             {
@@ -68,7 +93,7 @@ namespace H_Chat_Client
 
         private void InputBox_TextChanged(object sender, EventArgs e)
         {
-
+            Input_MSG = InputBox.Text;
         }             
     }
 }

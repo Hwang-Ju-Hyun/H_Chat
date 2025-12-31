@@ -9,6 +9,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using ChatHandler;
+
 
 namespace H_Chat
 {
@@ -19,7 +21,7 @@ namespace H_Chat
         TcpListener server;
         NetworkStream stream;
         TcpClient client;
-        ChatHandler ch;
+        ChatHandler.Common.ChatHandler ch;        
         public RichTextBox richbox
         {  get; set; }
 
@@ -57,14 +59,21 @@ namespace H_Chat
                     client = server.AcceptTcpClient();
                     if(client!=null&&client.Connected)
                     {
-                        string clientInfo = ((IPEndPoint)client.Client.RemoteEndPoint).ToString();
-
+                        string clientInfo = ((IPEndPoint)client.Client.RemoteEndPoint).ToString();                        
                         this.Invoke(new Action(() =>
                         {
                             textBox2.Text = clientInfo;
-                        }));                        
-                        ch = new ChatHandler(this,client);
-                        Task.Run(() => ch.Receive());                        
+                        }));
+                        ch = new ChatHandler.Common.ChatHandler(client);
+                        ch.OnMessageReceived += (msg) =>
+                        {
+                            Invoke(new Action(() =>
+                            {
+                                richTextBox1.AppendText(clientInfo+ " : " + msg);
+                                richTextBox1.AppendText("\n");
+                            }));
+                        };
+                        ch.Receive();
                     }
                 }
                 catch (Exception ex)
@@ -82,8 +91,8 @@ namespace H_Chat
         
         private void BTN_Send_Click(object sender, EventArgs e)
         {
-            ch.Send();
-            this.Invoke(new MethodInvoker(delegate { richTextBox1.AppendText(addr+":"+port+" : "+Input_MSG); }));            
+            ch.Send(Input_MSG);
+            this.Invoke(new MethodInvoker(delegate { richTextBox1.AppendText(addr+":"+port+" : "+Input_MSG); richTextBox1.AppendText("\n"); }));            
         }
         private void InputBox_TextChanged(object sender, EventArgs e)
         {
