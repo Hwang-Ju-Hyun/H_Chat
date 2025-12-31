@@ -21,7 +21,10 @@ namespace H_Chat
         TcpListener server;
         NetworkStream stream;
         TcpClient client;
-        ChatHandler.Common.ChatHandler ch;        
+
+        List<ChatHandler.Common.ChatHandler> clients;
+
+        private readonly object client_lock= new object();           
         public RichTextBox richbox
         {  get; set; }
 
@@ -49,34 +52,62 @@ namespace H_Chat
                     break;
                 }
             }
+            clients = new List<ChatHandler.Common.ChatHandler>();
+        }
+
+        private void PrintMessage(IPEndPoint ip,string msg)
+        {
+            richTextBox1.AppendText(ip.Address.ToString() + " : " + ip.Port.ToString() + " : " + msg);
+            richTextBox1.AppendText("\n");
+        }
+
+        private void OnClientMessage(ChatHandler.Common.ChatHandler sender,string msg)
+        {
+            string senderInfo=((IPEndPoint)sender.Client.Client.RemoteEndPoint).ToString();
+
+            this.Invoke(new Action(() =>
+            {
+                richTextBox1.AppendText($"{senderInfo} : {msg}\n");
+            }));
+
+            BroadCast(sender, msg);
         }
         
+        private void BroadCast(ChatHandler.Common.ChatHandler sender, string msg)
+        {
+            lock(client_lock)
+            {
+                foreach(var client in clients)
+                {
+                    if(client!= sender)
+                    {
+                        client.Send(msg);
+                    }
+                }
+            }
+        }
+
         private void AcceptClient()
         {
             while(true)
             {                
                 try
                 {
-                    client = server.AcceptTcpClient();
-                    if(client!=null&&client.Connected)
+                    TcpClient client = server.AcceptTcpClient();
+                    ChatHandler.Common.ChatHandler handler = new ChatHandler.Common.ChatHandler(client);
+                    
+                    lock(client_lock)
                     {
-                        string clientInfo = ((IPEndPoint)client.Client.RemoteEndPoint).ToString();                        
+                        clients.Add(handler);
+                        IPEndPoint client_ip = (IPEndPoint)handler.Client.Client.LocalEndPoint;
                         this.Invoke(new Action(() =>
                         {
-                            textBox2.Text = clientInfo;
+                            List_ConnectedIP.Items.Add(client_ip.Address + " : " + client_ip.Port);
                         }));
-                        ch = new ChatHandler.Common.ChatHandler(client);                   
+                    }                                                            
 
-                        ch.OnMessageReceived += (msg) =>
-                        {
-                            Invoke(new Action(() =>
-                            {
-                                richTextBox1.AppendText(clientInfo+ " : " + msg);
-                                richTextBox1.AppendText("\n");
-                            }));
-                        };
-                        ch.Receive();
-                    }
+                    handler.OnMessageReceived += OnClientMessage;
+                    handler.Receive();                    
                 }
                 catch (Exception ex)
                 {
@@ -93,12 +124,17 @@ namespace H_Chat
         
         private void BTN_Send_Click(object sender, EventArgs e)
         {
-            ch.Send(Input_MSG);
             this.Invoke(new Action(() =>
             {
                 richTextBox1.AppendText(addr + ":" + port + " : " + Input_MSG);
                 richTextBox1.AppendText("\n");
             }));
+
+            foreach (var client in clients)
+            {
+                client.Send($"{addr} : {port} : {Input_MSG}");
+            }
+
             InputBox.Text = string.Empty;
         }
         private void InputBox_TextChanged(object sender, EventArgs e)
@@ -118,6 +154,11 @@ namespace H_Chat
         private void label1_Click(object sender, EventArgs e)
         {
 
-        }        
+        }
+
+        private void List_ConnectedIP_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

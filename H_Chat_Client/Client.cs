@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ChatHandler;
 
-
 namespace H_Chat_Client
 {    
     public partial class Form1 : Form
@@ -42,14 +41,23 @@ namespace H_Chat_Client
         {
 
         }
-        private void BTN_Send_Click(object sender, EventArgs e)
+
+        private void OnSeverMessage(ChatHandler.Common.ChatHandler sender,string msg)
         {
-            ch.Send(Input_MSG);
+            Invoke(new Action(() =>
+            {
+                richTextBox1.AppendText(msg);
+                richTextBox1.AppendText("\n");
+            }));
+        }
+        private void BTN_Send_Click(object sender, EventArgs e)
+        {            
             this.Invoke(new Action(() =>
             {
                 richTextBox1.AppendText(ip.Address.ToString() + ":" + ip.Port.ToString() + " : " + Input_MSG);
                 richTextBox1.AppendText("\n");
-            }));            
+            }));
+            ch.Send(Input_MSG);
             InputBox.Text = string.Empty;
         }
         private void BTN_ConnectServer_Click(object sender, EventArgs e)
@@ -71,14 +79,8 @@ namespace H_Chat_Client
                 stream = client.GetStream();
                 MessageBox.Show("서버 연동 완료");
 
-                ch.OnMessageReceived += (msg) =>
-                {
-                    Invoke(new Action(() =>
-                    {
-                        richTextBox1.AppendText(server_addr + " : " + server_port + " : " + msg);
-                        richTextBox1.AppendText("\n");
-                    }));
-                };
+
+                ch.OnMessageReceived += OnSeverMessage;               
 
                 ch.Receive();
             }
@@ -86,7 +88,8 @@ namespace H_Chat_Client
             {
                 MessageBox.Show("서버 연동 실패");
             }
-        }
+        }        
+
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
         }

@@ -12,16 +12,24 @@ namespace ChatHandler.Common
 {
     public class ChatHandler
     {
-        TcpClient refClient = null;
+        TcpClient client = null;
         NetworkStream stream;
         BinaryReader br;
         BinaryWriter bw;
 
-        public event Action<string> OnMessageReceived;
+        public TcpClient Client
+        {
+            get { return client; }
+            set { client = value; }
+        }
+
+        public delegate void MessageDelegate(ChatHandler sender, string message);        
+        public event MessageDelegate OnMessageReceived;        
+
         public ChatHandler(TcpClient client)
         {
-            refClient = client;
-            stream = refClient.GetStream();
+            this.client = client;
+            stream = this.client.GetStream();
             br = new BinaryReader(stream);
             bw = new BinaryWriter(stream);
         }
@@ -30,14 +38,17 @@ namespace ChatHandler.Common
         {
             Task.Run(() => { ReceiveLoop(); });
         }
-        public void ReceiveLoop()
+        private void ReceiveLoop()
         {            
             try
             {
                 while (true)
                 {
                     string message = br.ReadString();
-                    OnMessageReceived?.Invoke(message);
+                    if(OnMessageReceived!=null)
+                    {
+                        OnMessageReceived(this, message);
+                    }
                 }
             }
             catch (Exception ex)
@@ -49,7 +60,7 @@ namespace ChatHandler.Common
         public void Send(string message)
         {
             bw.Write(message);
-            //bw.Flush();
+            bw.Flush();
         }
     }
 }

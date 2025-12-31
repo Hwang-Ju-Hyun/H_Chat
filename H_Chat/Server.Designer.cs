@@ -31,13 +31,13 @@
             this.L_ServerIP = new System.Windows.Forms.Label();
             this.L_ConnectedIP = new System.Windows.Forms.Label();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
             this.BTN_ServerStart = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.L_ChatWindow = new System.Windows.Forms.Label();
             this.L_InputMessage = new System.Windows.Forms.Label();
             this.InputBox = new System.Windows.Forms.TextBox();
             this.BTN_Send = new System.Windows.Forms.Button();
+            this.List_ConnectedIP = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // L_ServerIP
@@ -65,14 +65,6 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(242, 21);
             this.textBox1.TabIndex = 2;
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(163, 80);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(198, 21);
-            this.textBox2.TabIndex = 3;
-            this.textBox2.TextChanged += new System.EventHandler(this.textBox2_TextChanged);
             // 
             // BTN_ServerStart
             // 
@@ -129,22 +121,32 @@
             this.BTN_Send.UseVisualStyleBackColor = true;
             this.BTN_Send.Click += new System.EventHandler(this.BTN_Send_Click);
             // 
-            // Form1
+            // List_ConnectedIP
+            // 
+            this.List_ConnectedIP.FormattingEnabled = true;
+            this.List_ConnectedIP.ItemHeight = 12;
+            this.List_ConnectedIP.Location = new System.Drawing.Point(163, 83);
+            this.List_ConnectedIP.Name = "List_ConnectedIP";
+            this.List_ConnectedIP.Size = new System.Drawing.Size(274, 64);
+            this.List_ConnectedIP.TabIndex = 10;
+            this.List_ConnectedIP.SelectedIndexChanged += new System.EventHandler(this.List_ConnectedIP_SelectedIndexChanged);
+            // 
+            // Server
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(752, 450);
+            this.Controls.Add(this.List_ConnectedIP);
             this.Controls.Add(this.BTN_Send);
             this.Controls.Add(this.InputBox);
             this.Controls.Add(this.L_InputMessage);
             this.Controls.Add(this.L_ChatWindow);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.BTN_ServerStart);
-            this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.L_ConnectedIP);
             this.Controls.Add(this.L_ServerIP);
-            this.Name = "Form1";
+            this.Name = "Server";
             this.Text = "H_Chat_Server";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
@@ -157,13 +159,13 @@
         private System.Windows.Forms.Label L_ServerIP;
         private System.Windows.Forms.Label L_ConnectedIP;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.TextBox textBox2;
         private System.Windows.Forms.Button BTN_ServerStart;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.Label L_ChatWindow;
         private System.Windows.Forms.Label L_InputMessage;
         private System.Windows.Forms.TextBox InputBox;
         private System.Windows.Forms.Button BTN_Send;
+        private System.Windows.Forms.ListBox List_ConnectedIP;
     }
 }
 
