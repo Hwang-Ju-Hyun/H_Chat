@@ -102,6 +102,6 @@ namespace H_Chat_Client
         private void InputBox_TextChanged(object sender, EventArgs e)
         {
             Input_MSG = InputBox.Text;
-        }             
+        }                   
     }
 }

@@ -16,7 +16,7 @@ namespace ChatHandler.Common
         NetworkStream stream;
         BinaryReader br;
         BinaryWriter bw;
-
+        private readonly object send_lock = new object();
         public TcpClient Client
         {
             get { return client; }
@@ -24,14 +24,42 @@ namespace ChatHandler.Common
         }
 
         public delegate void MessageDelegate(ChatHandler sender, string message);        
-        public event MessageDelegate OnMessageReceived;        
+        public event MessageDelegate OnMessageReceived;
 
+        public delegate void DisconnectDelegate(ChatHandler sender);
+        public event DisconnectDelegate OnDisconnected;
         public ChatHandler(TcpClient client)
         {
             this.client = client;
             stream = this.client.GetStream();
             br = new BinaryReader(stream);
             bw = new BinaryWriter(stream);
+        }
+
+        public void Exit()
+        {
+            if (client != null)
+            {
+                this.client.Close();
+                this.client = null;
+            }
+            if(stream!=null)
+            {
+                this.stream.Close();
+                this.stream = null;
+            }
+            if(br!=null)
+            {
+                this.br.Close();
+                this.br = null;
+            }         
+            if(bw!=null)
+            {
+                this.bw.Close();
+                this.bw= null;
+            }
+            
+            
         }
 
         public void Receive()
@@ -53,14 +81,20 @@ namespace ChatHandler.Common
             }
             catch (Exception ex)
             {
+                if(OnDisconnected!=null)
+                {
+                    OnDisconnected(this);
+                }
                 Debug.WriteLine(ex);
             }
-
         }
         public void Send(string message)
         {
-            bw.Write(message);
-            bw.Flush();
+            lock(send_lock)
+            {
+                bw.Write(message);
+                bw.Flush();
+            }                
         }
     }
 }

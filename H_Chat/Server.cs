@@ -19,8 +19,7 @@ namespace H_Chat
         const string addr = "192.168.45.195";
         const int port = 5000;
         TcpListener server;
-        NetworkStream stream;
-        TcpClient client;
+        NetworkStream stream;        
 
         List<ChatHandler.Common.ChatHandler> clients;
 
@@ -37,6 +36,14 @@ namespace H_Chat
         public Server()
         {
             InitializeComponent();
+        }
+
+        void AllClose()
+        {
+            foreach(ChatHandler.Common.ChatHandler client in clients)
+            {
+                client.Exit();                
+            }            
         }
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -107,10 +114,12 @@ namespace H_Chat
                     }                                                            
 
                     handler.OnMessageReceived += OnClientMessage;
+                    handler.OnDisconnected += OnClientDisconnected;
                     handler.Receive();                    
                 }
                 catch (Exception ex)
                 {
+                    
                     MessageBox.Show(ex.Message);
                     break;
                 }
@@ -159,6 +168,19 @@ namespace H_Chat
         private void List_ConnectedIP_SelectedIndexChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void OnClientDisconnected(ChatHandler.Common.ChatHandler sender)
+        {
+            lock(client_lock)
+            {
+                clients.Remove(sender);
+            }
+            this.Invoke(new Action(() =>
+            {
+                List_ConnectedIP.Items.Remove(sender);
+                sender.Exit();
+            }));
         }
     }
 }
