@@ -50,6 +50,7 @@ namespace H_Chat
                 }
             }
         }
+        
         private void AcceptClient()
         {
             while(true)
@@ -64,7 +65,8 @@ namespace H_Chat
                         {
                             textBox2.Text = clientInfo;
                         }));
-                        ch = new ChatHandler.Common.ChatHandler(client);
+                        ch = new ChatHandler.Common.ChatHandler(client);                   
+
                         ch.OnMessageReceived += (msg) =>
                         {
                             Invoke(new Action(() =>
@@ -92,7 +94,12 @@ namespace H_Chat
         private void BTN_Send_Click(object sender, EventArgs e)
         {
             ch.Send(Input_MSG);
-            this.Invoke(new MethodInvoker(delegate { richTextBox1.AppendText(addr+":"+port+" : "+Input_MSG); richTextBox1.AppendText("\n"); }));            
+            this.Invoke(new Action(() =>
+            {
+                richTextBox1.AppendText(addr + ":" + port + " : " + Input_MSG);
+                richTextBox1.AppendText("\n");
+            }));
+            InputBox.Text = string.Empty;
         }
         private void InputBox_TextChanged(object sender, EventArgs e)
         {

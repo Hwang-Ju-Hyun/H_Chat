@@ -45,7 +45,12 @@ namespace H_Chat_Client
         private void BTN_Send_Click(object sender, EventArgs e)
         {
             ch.Send(Input_MSG);
-            this.Invoke(new MethodInvoker(delegate { richTextBox1.AppendText(ip.Address.ToString() + " : " + ip.Port.ToString() + " : " + Input_MSG); richTextBox1.AppendText("\n"); }));
+            this.Invoke(new Action(() =>
+            {
+                richTextBox1.AppendText(ip.Address.ToString() + ":" + ip.Port.ToString() + " : " + Input_MSG);
+                richTextBox1.AppendText("\n");
+            }));            
+            InputBox.Text = string.Empty;
         }
         private void BTN_ConnectServer_Click(object sender, EventArgs e)
         {            
