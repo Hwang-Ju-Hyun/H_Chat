@@ -11,12 +11,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using ChatHandler;
 
-
 namespace H_Chat
 {
     public partial class Server : Form
     {
-        const string addr = "192.168.45.195";
+        const string addr = "192.168.45.30";
         const int port = 5000;
         TcpListener server;
         NetworkStream stream;        
@@ -70,14 +69,14 @@ namespace H_Chat
 
         private void OnClientMessage(ChatHandler.Common.ChatHandler sender,string msg)
         {
-            string senderInfo=((IPEndPoint)sender.Client.Client.RemoteEndPoint).ToString();
+            string senderInfo=((IPEndPoint)sender.Client.Client.RemoteEndPoint).ToString();            
 
             this.Invoke(new Action(() =>
             {
                 richTextBox1.AppendText($"{senderInfo} : {msg}\n");
             }));
-
-            BroadCast(sender, msg);
+            string formatMsg = senderInfo +" : "+ msg;
+            BroadCast(sender, formatMsg);
         }
         
         private void BroadCast(ChatHandler.Common.ChatHandler sender, string msg)
@@ -106,7 +105,7 @@ namespace H_Chat
                     lock(client_lock)
                     {
                         clients.Add(handler);
-                        IPEndPoint client_ip = (IPEndPoint)handler.Client.Client.LocalEndPoint;
+                        IPEndPoint client_ip = (IPEndPoint)handler.Client.Client.RemoteEndPoint;
                         this.Invoke(new Action(() =>
                         {
                             List_ConnectedIP.Items.Add(client_ip.Address + " : " + client_ip.Port);
@@ -181,6 +180,11 @@ namespace H_Chat
                 List_ConnectedIP.Items.Remove(sender);
                 sender.Exit();
             }));
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
